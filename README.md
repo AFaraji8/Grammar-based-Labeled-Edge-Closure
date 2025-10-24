@@ -1,4 +1,5 @@
-# Grammar-based-Labeled-Edge-Closure-C-
+# Grammar-based Labeled-Edge Closure (C++)
+
 ## Project summary
 A small C++ program (`r.cpp`) that reads a labelled directed graph and a set of grammar rules of the form `X -> A B`, then computes new labelled edges that can be inferred by applying these grammar rules over existing edges. The program repeatedly applies the rules until no additional edges can be derived, and prints the total number of new edges discovered.
 
@@ -57,3 +58,23 @@ Or use the provided VS Code task `C/C++: g++.exe build active file` to build.
 
 ## Output
 - The program prints a single integer (to stdout) which is the count of inferred edges produced by the algorithm.
+
+## Known issues & notes
+- The original code uses some unsafe patterns (e.g., `while(!in.eof())`, variable-length arrays, and linear vector searches) that can cause incorrect behavior, poor performance, or crashes on malformed input.
+- Labels and grammar tokens are expected to be single characters in the current implementation.
+- No input validation is performed: ensure vertex indices in `graph.txt` are in `[0, N-1]` and files exist in the working directory.
+
+## Suggested improvements
+- Use `while (in >> a >> b >> c)` to read input safely (avoid `eof()` pattern).
+- Replace the fixed 2D C-style VLA with `std::vector<std::vector<char>>` or a single `std::vector<char>` with index arithmetic.
+- Replace `vector` + `find` deduplication with an `unordered_set` keyed on `(u,v,label)` for O(1) membership checks.
+- Add input validation and clearer error messages.
+
+## Next steps
+If you want, I can:
+- Submit an improved `r.cpp` with the fixes and performance improvements applied.
+- Compile and run it on the included `grammar.txt` / `graph.txt` and report the numeric result.
+- Add simple unit tests or example output files to the repo.
+
+---
+Please tell me which next step you'd prefer (fix code, run current code, or add tests), and I will proceed.
