@@ -64,3 +64,8 @@ A C D
 
 ## 📊 Output
 - The program prints a single integer (to stdout), which is the count of inferred edges produced by the algorithm.
+
+
+---
+Developed as the Data Structures Project.
+
