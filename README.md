@@ -1,17 +1,31 @@
 # Grammar-based Labeled-Edge Closure (C++)
 
-## Project summary
-A small C++ program (`r.cpp`) that reads a labelled directed graph and a set of grammar rules of the form `X -> A B`, then computes new labelled edges that can be inferred by applying these grammar rules over existing edges. The program repeatedly applies the rules until no additional edges can be derived, and prints the total number of new edges discovered.
+A specialized C++ tool designed to compute the transitive closure of labeled directed graphs based on **Context-Free Grammar (CFG)** production rules. This problem, often referred to as **CFL-Reachability**, is a cornerstone of static program analysis and formal language theory.
 
-## Files
-- `r.cpp` — main C++ source. Implements loading of the grammar and graph, rule-based inference of new edges, and counting of discovered edges.
-- `grammar.txt` — grammar rules input (see format below).
-- `graph.txt` — graph input (see format below).
-- `grammar1.txt`, `grammar2.txt`, `graph1.txt`, `graph2.txt` — other sample inputs included in the repository.
+## 📌 Project Summary
+The program (`r.cpp`) reads a directed graph with labeled edges and a set of grammar rules (e.g., $X \to AB$). It then infers new labeled edges by identifying paths that match the grammar. For example, if the graph contains $u \xrightarrow{A} m$ and $m \xrightarrow{B} v$, the program derives a new edge $u \xrightarrow{X} v$. This process repeats until a **fixed point** is reached, meaning no more edges can be inferred.
 
-## Input formats
+## 📂 Project Structure
+- **`r.cpp`**: Core source code implementing the inference engine and worklist logic.
+- **`grammar.txt`**: The active production rules for the current execution.
+- **`graph.txt`**: The primary input graph.
+- **`Samples/`**: Includes additional test cases (`grammar1.txt`, `graph1.txt`, etc.) for validation.
 
-1) `grammar.txt`
+## 🔑 Internal Logic & Mapping
+To understand the source code, here are the primary components:
+
+* **`class rule`**: Encapsulates a CFG production rule ($S1 + S2 \implies Tabdil$).
+* **`class newedges`**: Represents an inferred edge defined by its source (`v1`), destination (`v2`), and label (`size`).
+* **`nedge` / `nnedge`**: These vectors act as a **Worklist**. `nedge` stores discovered edges, while `nnedge` buffers newly found edges during the current iteration to prevent iterator invalidation.
+* **`matrix[ras][ras]`**: An adjacency matrix used for $O(1)$ lookup of initial edge labels between vertices.
+* **`total`**: A long-integer counter that tracks the cumulative number of newly discovered edges.
+
+## 📥 Input Formats
+
+### 1. Grammar Rules (`grammar.txt`)
+Each line defines a rule where three tokens represent a binary production:
+- **Format:** `TABDIL S1 S2` (interpreted as $TABDIL \to S1 S2$).
+- **Example:** `C A B` means "An A-labeled edge followed by a B-labeled edge creates a C-labeled edge."
 - Each non-empty line describes a rule with three tokens: `TABDIL S1 S2` (separated by whitespace).
 - Interpretation: `TABDIL -> S1 S2` (e.g. `C A B` means `C -> A B`).
 - Example:
@@ -22,7 +36,10 @@ B A D
 A C D
 ```
 
-2) `graph.txt`
+### 2. Graph Definition (`graph.txt`)
+- **Line 1:** An integer $N$ (Total vertices, indexed $0 \dots N-1$).
+- **Successive Lines:** `u v LABEL` (A directed edge from $u$ to $v$ with a single-character label).
+
 - The first line contains a single integer: number of vertices `N` (vertices are assumed to be 0..N-1).
 - Each following line describes a directed labelled edge as three tokens: `u v LABEL` (separated by whitespace), meaning an edge from `u` to `v` with label `LABEL` (single character label expected).
 - Example:
@@ -36,45 +53,14 @@ A C D
 ... (more edges)
 ```
 
-## What the program does (brief)
+
+
+## 🛠️ What the program does (brief)
 - Loads grammar rules and builds a list of rules `X -> A B`.
 - Loads the graph into an adjacency matrix of labels (single label per ordered pair is stored if present).
 - Finds edge pairs that match the right-hand side `A` then `B` (i.e. `u -[A]-> m -[B]-> v`), and infers a new edge `u -[X]-> v` according to `X -> A B`.
 - Repeats combining newly inferred edges with existing edges and with other rules until no further edges are produced (a closure/fixpoint is reached).
 - Outputs a single integer: the number of new edges discovered during the inference process.
 
-## Build & run (Windows / PowerShell)
-- You can compile using your MinGW/G++ toolchain. Example (adjust compiler path if needed):
-
-```powershell
-# Compile
-C:\msys64\mingw64\bin\g++.EXE -Wall -Wextra -g3 r.cpp -o r.exe
-
-# Run (reads grammar.txt and graph.txt from current directory)
-.\\r.exe
-```
-
-Or use the provided VS Code task `C/C++: g++.exe build active file` to build.
-
-## Output
-- The program prints a single integer (to stdout) which is the count of inferred edges produced by the algorithm.
-
-## Known issues & notes
-- The original code uses some unsafe patterns (e.g., `while(!in.eof())`, variable-length arrays, and linear vector searches) that can cause incorrect behavior, poor performance, or crashes on malformed input.
-- Labels and grammar tokens are expected to be single characters in the current implementation.
-- No input validation is performed: ensure vertex indices in `graph.txt` are in `[0, N-1]` and files exist in the working directory.
-
-## Suggested improvements
-- Use `while (in >> a >> b >> c)` to read input safely (avoid `eof()` pattern).
-- Replace the fixed 2D C-style VLA with `std::vector<std::vector<char>>` or a single `std::vector<char>` with index arithmetic.
-- Replace `vector` + `find` deduplication with an `unordered_set` keyed on `(u,v,label)` for O(1) membership checks.
-- Add input validation and clearer error messages.
-
-## Next steps
-If you want, I can:
-- Submit an improved `r.cpp` with the fixes and performance improvements applied.
-- Compile and run it on the included `grammar.txt` / `graph.txt` and report the numeric result.
-- Add simple unit tests or example output files to the repo.
-
----
-Please tell me which next step you'd prefer (fix code, run current code, or add tests), and I will proceed.
+## 📊 Output
+- The program prints a single integer (to stdout), which is the count of inferred edges produced by the algorithm.
